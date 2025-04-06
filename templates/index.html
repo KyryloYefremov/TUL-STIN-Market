@@ -52,6 +52,12 @@
                     {% for favorite in favorites %}
                         <li class="list-group-item">
                             {{ favorite.ticker }} - {{ favorite.name }}
+                            <!-- Delete Button -->
+                            <form action="{{ url_for('delete_favorite_stock') }}" method="POST" class="d-inline float-end">
+                                <input type="hidden" name="ticker" value="{{ favorite.ticker }}">
+                                <input type="hidden" name="name" value="{{ favorite.name }}">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="list-group-item">No favorite companies.</li>
