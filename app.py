@@ -3,6 +3,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import json
 
+from StockMarketController import StockMarketController
+
 
 def update_stock_data():
     """
@@ -19,6 +21,8 @@ def update_stock_data():
 
 
 app = Flask(__name__)
+
+stock_market_controller = StockMarketController()  # initialize the stock market controller
 
 scheduler = BackgroundScheduler()  # initialize the scheduler
 # create a job to update stock data at defined time intervals
@@ -48,12 +52,21 @@ COMPANIES = [
 def home():
     return render_template('index.html', companies=COMPANIES, favorites=favorites)
 
+
 # Route for search functionality
 @app.route('/search_stock', methods=['GET'])
 def search_stock():
     query = request.args.get('query', '')
-    # Simulate search by filtering companies based on the query
-    search_results = [company for company in COMPANIES if query.lower() in company['name'].lower()]
+    search_results = []   # if no query/bad query will be provided, return empty results -> will be displayed in the UI as "No results found."
+
+    if query:
+        query = query.lower()
+        try:
+            # Simulate search by filtering companies based on the query
+            search_results = [company for company in COMPANIES if query.lower() in company['name'].lower()]
+        except Exception as e:
+            pass
+        
     return json.dumps(search_results)
 
 
@@ -110,7 +123,6 @@ def add_recommendations():
         {"name": "OpenAI", "date": None, "rating": None, "sale": 0},
     ]
     return jsonify(json_data)
-
 
 
 if __name__ == '__main__':
