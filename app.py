@@ -53,6 +53,15 @@ def home():
     return render_template('index.html', companies=COMPANIES, favorites=favorites)
 
 
+@app.route('/start_app', methods=['POST'])
+def start_app():
+    """
+    Start the application manually. Trigger the main pipeline.
+    """
+    # update_stock_data()
+    return redirect(url_for('home'))
+
+
 # Route for search functionality
 @app.route('/search_stock', methods=['GET'])
 def search_stock():
