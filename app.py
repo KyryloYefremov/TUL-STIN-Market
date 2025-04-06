@@ -70,6 +70,18 @@ def add_favorite_stock():
     return redirect(url_for('home'))
 
 
+# Route for removing a company from the favorites list
+@app.route('/delete_favorite_stock', methods=['POST'])
+def delete_favorite_stock():
+    ticker = request.form.get('ticker')
+    
+    # Remove the company from the favorites list
+    global favorites
+    favorites = [fav for fav in favorites if fav['ticker'] != ticker]
+
+    return redirect(url_for('home'))
+
+
 # Endpoint to send the list of stocks 
 @app.route('/liststock')
 def send_liststock():
