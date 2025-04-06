@@ -45,6 +45,13 @@
                 </div>
             </div>
 
+            <!-- Button to manually start application -->
+            <div class="mt-5 text-center">
+                <form action="{{ url_for('start_app') }}" method="POST">
+                    <button class="btn btn-success btn-lg fw-bold shadow" type="submit" id="start-app-btn">🚀 Start Market</button>
+                </form>
+            </div>
+
             <!-- Company List (Favorites) -->
             <div class="mt-5">
                 <h3>Your Favorite Companies</h3>
