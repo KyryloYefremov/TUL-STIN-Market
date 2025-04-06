@@ -38,7 +38,7 @@ def home():
 @app.route('/liststock')
 def send_liststock():
     """
-    Send a list of filterd stocks to the endpoint as json.
+    Send a list of filtered stocks to the endpoint as json.
     """
     json_data = [
         {"name": "Microsoft", "date": None, "rating": None, "sale": None},
