@@ -52,7 +52,7 @@ def send_liststock():
 def add_recommendations():
     """ 
     Add a recommendation "to sell" to those items
-    that have a higher rainging than the user-defined value. 
+    that have a higher rating than the user-defined value. 
     Send the updated json to the endpoint
     """
     json_data = [
