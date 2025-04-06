@@ -9,9 +9,9 @@ def update_stock_data():
     The function will trigger the pipeline:
     1. Get the stock data from the API
     2. Filter the data
-    3. Send data to modul "News" to get ratings for requested companies stockes based on their latest news.
-    4. Based on the ratings, add a recommendation to the user favorite stockes either to sell, or keep them.
-    5. Send the updated stock data to the modul "News".
+    3. Send data to module "News" to get ratings for requested companies stocks based on their latest news.
+    4. Based on the ratings, add a recommendation to the user favorite stocks either to sell, or keep them.
+    5. Send the updated stock data to the module "News".
     """
     print("Stock data updated!")
 
