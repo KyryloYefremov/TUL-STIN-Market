@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Responsive Page</title>
+    <!-- Link to external CSS file -->
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -14,20 +16,49 @@
             <h1>Stock Market application</h1>
         </header>
 
-        
         <div class="text-center">
             <!-- Paragraph -->
             <p>Type a company name you want to find:</p>
-            
+
             <!-- Search Form -->
-            <form action="{{ url_for('search') }}" method="GET">
+            <form action="{{ url_for('search_stock') }}" method="GET" id="search-form">
                 <div class="input-group w-75 w-md-50 mx-auto">
                     <input type="text" class="form-control" placeholder="Search..." aria-label="Search" name="query" required>
                     <button class="btn btn-primary" type="submit">Search</button>
                 </div>
             </form>
-        </div>
 
+            <!-- Bootstrap Modal for Results -->
+            <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="resultModalLabel">Search Results</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul id="modal-result-list" class="list-group">
+                                <!-- Results will be shown here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company List (Favorites) -->
+            <div class="mt-5">
+                <h3>Your Favorite Companies</h3>
+                <ul class="list-group px-3" id="favorite-list">
+                    {% for favorite in favorites %}
+                        <li class="list-group-item">
+                            {{ favorite.ticker }} - {{ favorite.name }}
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">No favorite companies.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
         <footer class="text-center py-3 mt-5">
             <p>&copy; 2025 Your Website</p>
@@ -37,6 +68,14 @@
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <!-- Inject the 'add_favorite_stock' URL into a global JavaScript variable -->
+    <script>
+        var addFavoriteStockUrl = "{{ url_for('add_favorite_stock') }}"; // Pass URL dynamically from Flask to JavaScript
+    </script>
+
+    <!-- Link to external JS file -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 
 </body>
 </html>
