@@ -1,6 +1,7 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+import json
 
 
 def update_stock_data():
@@ -30,11 +31,46 @@ scheduler.add_job(
 scheduler.start()
 
 
+# Global list to store favorite companies
+favorites = []
+
+# Example company data (for the sake of simplicity)
+COMPANIES = [
+    {"ticker": "AAPL", "name": "Apple Inc."},
+    {"ticker": "GOOGL", "name": "Alphabet Inc. (Google)"},
+    {"ticker": "AMZN", "name": "Amazon.com, Inc."},
+    {"ticker": "MSFT", "name": "Microsoft Corporation"},
+    {"ticker": "TSLA", "name": "Tesla, Inc."},
+]
+
+# Route for the home page
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', companies=COMPANIES, favorites=favorites)
+
+# Route for search functionality
+@app.route('/search_stock', methods=['GET'])
+def search_stock():
+    query = request.args.get('query', '')
+    # Simulate search by filtering companies based on the query
+    search_results = [company for company in COMPANIES if query.lower() in company['name'].lower()]
+    return json.dumps(search_results)
 
 
+# Route for adding a company to the favorites list
+@app.route('/add_favorite_stock', methods=['POST'])
+def add_favorite_stock():
+    ticker = request.form.get('ticker')
+    name = request.form.get('name')
+    
+    # Check if the company is already in the favorites list
+    if all(fav['ticker'] != ticker for fav in favorites):
+        favorites.append({'ticker': ticker, 'name': name})
+
+    return redirect(url_for('home'))
+
+
+# Endpoint to send the list of stocks 
 @app.route('/liststock')
 def send_liststock():
     """
@@ -48,6 +84,7 @@ def send_liststock():
     return jsonify(json_data)
 
 
+# Endpoint to send the list of stocks with a recommendation to sell
 @app.route('/salestock')
 def add_recommendations():
     """ 
