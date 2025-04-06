@@ -7,3 +7,4 @@ __pycache__/
 stin-venv/
 .coverage
 .pytest_cache/
+htmlcov/
