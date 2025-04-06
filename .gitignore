@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 *.pyc
 stin-venv/
+.coverage
+.pytest_cache/
+htmlcov/
