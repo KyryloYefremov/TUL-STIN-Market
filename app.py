@@ -76,7 +76,7 @@ def search_stock():
         except Exception as e:
             pass
         
-    return json.dumps(search_results)
+    return jsonify(search_results)
 
 
 # Route for adding a company to the favorites list
