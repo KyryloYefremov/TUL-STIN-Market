@@ -94,12 +94,11 @@ def search_stock():
 def add_favorite_stock():
     ticker = request.form.get('ticker')
     name = request.form.get('name')
-
-    logger.log(f"Adding favorite stock: {ticker}")
     
     # Check if the company is already in the favorites list
     if all(fav['ticker'] != ticker for fav in favorites):
         favorites.append({'ticker': ticker, 'name': name})
+        logger.log(f"Adding favorite stock: {ticker}")
 
     return redirect(url_for('home'))
 
