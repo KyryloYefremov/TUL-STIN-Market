@@ -2,7 +2,9 @@
 const logPanelWrapper = document.getElementById('log-panel-wrapper');
 const toggleLogBtn = document.getElementById('toggle-log-btn');
 
-let hidden = true; // Initial state of the log panel
+let hidden = true; // Initial state of the log panel (default hidden)
+logPanelWrapper.style.transform = 'translateX(100%)'; // Hide it initially
+toggleLogBtn.innerText = 'Show Logs';
 
 toggleLogBtn.addEventListener('click', () => {
     hidden = !hidden;
@@ -10,21 +12,17 @@ toggleLogBtn.addEventListener('click', () => {
     toggleLogBtn.innerText = hidden ? 'Show Logs' : 'Hide Logs';
 });
 
-
 // Handle stock search
 document.getElementById('search-form').addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent form submission for AJAX-like behavior
 
-    // Get the search query value
     const query = document.querySelector('input[name="query"]').value;
 
-    // Send the search query to the server using fetch
     fetch(`/search_stock?query=${query}`)
-        .then(response => response.json())  // Parse JSON response
+        .then(response => response.json())
         .then(data => {
-            // Populate the modal with the results
             const modalList = document.getElementById('modal-result-list');
-            modalList.innerHTML = '';  // Clear previous results
+            modalList.innerHTML = '';
 
             if (data.length === 0) {
                 modalList.innerHTML = '<li class="list-group-item">No results found.</li>';
@@ -42,19 +40,21 @@ document.getElementById('search-form').addEventListener('submit', function (e) {
                 });
             }
 
-            // Show the modal
             const myModal = new bootstrap.Modal(document.getElementById('resultModal'));
             myModal.show();
         })
         .catch(error => console.error('Error:', error));
 });
 
-
 // Logging helper
 function logEvent(message) {
     const now = new Date();
-    const time = now.toLocaleTimeString();
-    const date = now.toLocaleDateString();
     const logPanel = document.getElementById('log-panel');
-    logPanel.textContent += `\n[${time}] - ${message} [${date}]`;
+    logPanel.textContent += `\n\n${message}`;
 }
+
+// Connect to SSE for server logs
+const eventSource = new EventSource('/logs');
+eventSource.onmessage = function (event) {
+    logEvent(event.data);
+};
