@@ -1,8 +1,8 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-import json
 
+from log_streamer import LogStreamer
 from StockMarketController import StockMarketController
 
 
@@ -21,7 +21,7 @@ def update_stock_data():
 
 
 app = Flask(__name__)
-
+logger = LogStreamer()  # initialize the logger
 stock_market_controller = StockMarketController()  # initialize the stock market controller
 
 scheduler = BackgroundScheduler()  # initialize the scheduler
@@ -47,6 +47,13 @@ COMPANIES = [
     {"ticker": "TSLA", "name": "Tesla, Inc."},
 ]
 
+
+# Route for streaming logs
+@app.route('/logs')
+def logs():
+    return logger.stream()
+
+
 # Route for the home page
 @app.route('/')
 def home():
@@ -59,6 +66,7 @@ def start_app():
     Start the application manually. Trigger the main pipeline.
     """
     # update_stock_data()
+    logger.log("Application started manually")
     return redirect(url_for('home'))
 
 
@@ -66,15 +74,17 @@ def start_app():
 @app.route('/search_stock', methods=['GET'])
 def search_stock():
     query = request.args.get('query', '')
-    search_results = []   # if no query/bad query will be provided, return empty results -> will be displayed in the UI as "No results found."
 
+    logger.log(f"Searching for stock: {query}")
+    
     if query:
         query = query.lower()
         try:
             # Simulate search by filtering companies based on the query
             search_results = [company for company in COMPANIES if query.lower() in company['name'].lower()]
         except Exception as e:
-            pass
+            # if no query/bad query will be provided, return empty results -> will be displayed in the UI as "No results found."
+            search_results = []   
         
     return jsonify(search_results)
 
@@ -84,6 +94,8 @@ def search_stock():
 def add_favorite_stock():
     ticker = request.form.get('ticker')
     name = request.form.get('name')
+
+    logger.log(f"Adding favorite stock: {ticker}")
     
     # Check if the company is already in the favorites list
     if all(fav['ticker'] != ticker for fav in favorites):
@@ -96,6 +108,8 @@ def add_favorite_stock():
 @app.route('/delete_favorite_stock', methods=['POST'])
 def delete_favorite_stock():
     ticker = request.form.get('ticker')
+
+    logger.log(f"Removing favorite stock: {ticker}")
     
     # Remove the company from the favorites list
     global favorites
@@ -110,6 +124,8 @@ def send_liststock():
     """
     Send a list of filtered stocks to the endpoint as json.
     """
+    logger.log("Endpoint /liststock was triggered")
+
     json_data = [
         {"name": "Microsoft", "date": None, "rating": None, "sale": None},
         {"name": "Google", "date": None, "rating": None, "sale": None},
@@ -126,6 +142,8 @@ def add_recommendations():
     that have a higher rating than the user-defined value. 
     Send the updated json to the endpoint
     """
+    logger.log("Endpoint /salestock was triggered")
+
     json_data = [
         {"name": "Microsoft", "date": None, "rating": None, "sale": 1},
         {"name": "Google", "date": None, "rating": None, "sale": 0},
