@@ -21,3 +21,13 @@ footer {
     background-color: #f8f9fa;
     margin-top: 50px;
 }
+
+#log-panel {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#log-panel-wrapper {
+    transform: translateX(100%);
+}

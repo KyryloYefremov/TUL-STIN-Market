@@ -1,3 +1,17 @@
+// Toggle log panel visibility
+const logPanelWrapper = document.getElementById('log-panel-wrapper');
+const toggleLogBtn = document.getElementById('toggle-log-btn');
+
+let hidden = true; // Initial state of the log panel
+
+toggleLogBtn.addEventListener('click', () => {
+    hidden = !hidden;
+    logPanelWrapper.style.transform = hidden ? 'translateX(100%)' : 'translateX(0)';
+    toggleLogBtn.innerText = hidden ? 'Show Logs' : 'Hide Logs';
+});
+
+
+// Handle stock search
 document.getElementById('search-form').addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent form submission for AJAX-like behavior
 
@@ -34,3 +48,13 @@ document.getElementById('search-form').addEventListener('submit', function (e) {
         })
         .catch(error => console.error('Error:', error));
 });
+
+
+// Logging helper
+function logEvent(message) {
+    const now = new Date();
+    const time = now.toLocaleTimeString();
+    const date = now.toLocaleDateString();
+    const logPanel = document.getElementById('log-panel');
+    logPanel.textContent += `\n[${time}] - ${message} [${date}]`;
+}
