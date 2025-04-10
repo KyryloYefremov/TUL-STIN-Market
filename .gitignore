@@ -9,4 +9,5 @@ stin-venv/
 .pytest_cache/
 htmlcov/
 
-config.json
+*.json
+*.txt
