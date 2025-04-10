@@ -39,7 +39,10 @@ def logs():
 # Route for the home page
 @app.route('/')
 def home():
-    favourites = module_market.get_favourite_stocks()
+    try:
+        favourites = module_market.get_favourite_stocks()
+    except FileNotFoundError:
+        favourites = []
     return render_template('index.html', favourites=favourites)
 
 
@@ -77,7 +80,10 @@ def add_favourite_stock():
     ticker = request.form.get('ticker')
     name = request.form.get('name')
 
-    favourites = module_market.get_favourite_stocks()
+    try:
+        favourites = module_market.get_favourite_stocks()
+    except FileNotFoundError:
+        favourites = []
     
     # Check if the company is already in the favourites list
     if all(fav[1] != ticker for fav in favourites):
