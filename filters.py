@@ -1,12 +1,8 @@
-from abc import ABC, abstractmethod
-
-
 class Filter:
     """
     Abstract class for filters.
     This class defines the interface for all filters.
     """
-    @abstractmethod
     @staticmethod
     def apply(prices: list[float]) -> bool:
         raise NotImplementedError("Subclasses should implement this method.")
