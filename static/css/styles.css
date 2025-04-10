@@ -1,0 +1,33 @@
+/* Add your custom styles here */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container-fluid {
+    padding: 20px;
+}
+
+header h1 {
+    color: #007bff;
+}
+
+#favorite-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+footer {
+    background-color: #f8f9fa;
+    margin-top: 50px;
+}
+
+#log-panel {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#log-panel-wrapper {
+    transform: translateX(100%);
+}
