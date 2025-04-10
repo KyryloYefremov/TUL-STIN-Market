@@ -22,7 +22,9 @@ class DataController:
             ...
         """
 
-        self.RATING_THRESHOLD = 0  # user-defined rating threshold for selling stocks
+        self.RATING_THRESHOLD = config_manager.RATING_THRESHOLD  # user-defined rating threshold for selling stocks
+        self.RATING_MIN =  config_manager.RATING_MIN # minimum rating value
+        self.RATING_MAX = config_manager.RATING_MAX  # maximum rating value
 
         # endpoints of module "News"
         self.news_url = config_manager.NEWS_URL
@@ -35,8 +37,8 @@ class DataController:
 
         # initialize filters
         self.filters = [
-            Filter3Days(),
-            Filter5Days(),
+            # Filter3Days(),
+            # Filter5Days(),
         ]
         # initialize stock market controller
         self.stock_market = stock_market
@@ -49,7 +51,7 @@ class DataController:
         """
         Function to start our market - update stock data. This function will be called by the scheduler or manually from UI.
         The function will trigger the pipeline:
-        1. Get favourite stocks from the user file
+        1. Get favourite stocks from the user file.
         2. Filter the stocks by the defined filters based on price from API.
         3. Send filtered stocks to module "News" to get ratings for requested companies stocks based on their latest news.
         4. Based on the ratings, add a recommendation to the user favourite stocks either to sell, or keep them.
@@ -194,7 +196,7 @@ class DataController:
                     # TODO: add more complex validation
                     # validace vstupních dat
                     if all(attr in stock for attr in ["name", "date", "rating", "sale"]):
-                        if isinstance(stock["rating"], int) and -10 <= stock["rating"] <= 10:
+                        if isinstance(stock["rating"], int) and self.RATING_MIN <= stock["rating"] <= self.RATING_MAX:
                             valid_stocks.append(stock)
 
                 # save the valid stocks to self.stocks
