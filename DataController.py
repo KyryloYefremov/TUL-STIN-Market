@@ -3,11 +3,12 @@ from datetime import datetime
 from typing import Tuple
 
 from StockMarketController import StockMarketController
+from log_streamer import LogStreamer
 from filters import *
 
 
 class DataController:
-    def __init__(self, news_url: str):
+    def __init__(self, news_url: str, stock_market: StockMarketController, logger: LogStreamer):
         """
         Initializes the DataController with paths to data files.
         Stock data is stored in 'data' folder as a stock_data.json file in the following format:
@@ -36,30 +37,53 @@ class DataController:
             Filter5Days(),
         ]
         # initialize stock market controller
-        self.stock_market = StockMarketController()
+        self.stock_market = stock_market
+        self.logger = logger
 
         self.stocks = []
 
 
-    def start_market(self):
+    def start_market(self, mode="scheduled"):
         """
         Function to start our market - update stock data. This function will be called by the scheduler or manually from UI.
         The function will trigger the pipeline:
-        1. Get favorite stocks from the user file
+        1. Get favourite stocks from the user file
         2. Filter the stocks by the defined filters based on price from API.
         3. Send filtered stocks to module "News" to get ratings for requested companies stocks based on their latest news.
-        4. Based on the ratings, add a recommendation to the user favorite stocks either to sell, or keep them.
+        4. Based on the ratings, add a recommendation to the user favourite stocks either to sell, or keep them.
         5. Send the updated stock data to the module "News" in order to sell it or buy.
         """
+        try:
+            self.logger.log(f"Market started {mode}")
 
-        favourite_stocks = self.get_favourite_stocks()
-        filtered_stocks = self.filter_stocks(favourite_stocks)
-        self.pack_stock_data(filtered_stocks)  # pack stock data to json self.stocks
-        self.send_to_news_module(self.liststock_endpoint)
-        self.get_stocks_rating()  # stocks ratings are saved to self.stocks
-        self.add_recommendations()
-        self.send_to_news_module(self.salestock_endpoint)
+            favourite_stocks = self.get_favourite_stocks()
+            self.logger.log(f"Receiving favourite stocks: {len(favourite_stocks)}")
 
+            filtered_stocks = self.filter_stocks(favourite_stocks)
+            self.logger.log(f"Filtered stocks: {len(filtered_stocks)}")
+
+            if len(filtered_stocks) == 0:
+                self.logger.log(f"No stocks to process")
+                return
+
+            self.pack_stock_data(filtered_stocks)  # pack stock data to json self.stocks
+
+            self.send_to_news_module(self.liststock_endpoint)
+            self.logger.log(f"Sending stocks to News: {self.liststock_endpoint}")
+
+            self.get_stocks_rating()  # stocks ratings are saved to self.stocks
+            self.logger.log(f"Getting stocks rating from News")
+
+            self.add_recommendations()
+            self.logger.log(f"Adding recommendations to stocks")
+
+            self.send_to_news_module(self.salestock_endpoint)
+            self.logger.log(f"Sending stocks to News: {self.salestock_endpoint}")
+
+            self.logger.log(f"Market finished successfully")
+        except Exception as e:
+            self.logger.log(f"Market failed.")
+            self.logger.log(f"Error: {e}")
 
     def update_favourite_stocks(self, new_stock: Tuple[str, str]):
         """
@@ -82,7 +106,7 @@ class DataController:
             lines = file.readlines()
         with open(self.favourite_stocks_path, "w") as file:
             for line in lines:
-                if line.strip("\n") != stock:
+                if line.strip("\n").split(',')[1] != stock:
                     file.write(line)
 
     def get_favourite_stocks(self) -> list[Tuple[str, str]]:
@@ -109,7 +133,7 @@ class DataController:
         """
         filtered_stocks = []
 
-        # per favorite stock
+        # per favourite stock
         for stock in stocks:
             ticker = stock[1]  # get the ticker
             prices = self.stock_market.get_recent_prices(ticker)  # get the last 5 prices
