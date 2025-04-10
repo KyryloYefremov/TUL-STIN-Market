@@ -2,32 +2,19 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from DataController import DataController
 from log_streamer import LogStreamer
 from StockMarketController import StockMarketController
 
 
-def update_stock_data():
-    """
-    Function to update stock data. This function will be called by the scheduler or manually from UI.
-    The function will trigger the pipeline:
-    1. Get the stock data from the API
-    2. Filter the data
-    3. Send data to module "News" to get ratings for requested companies stocks based on their latest news.
-    4. Based on the ratings, add a recommendation to the user favorite stocks either to sell, or keep them.
-    5. Send the updated stock data to the module "News".
-    """
-    print("Stock data updated!")
-
-
-
 app = Flask(__name__)
+market = DataController(news_url='')  # initialize the DataController with the URL of the news module
 logger = LogStreamer()  # initialize the logger
 stock_market_controller = StockMarketController()  # initialize the stock market controller
-
 scheduler = BackgroundScheduler()  # initialize the scheduler
 # create a job to update stock data at defined time intervals
 scheduler.add_job(
-    update_stock_data,
+    market.start_market,
     trigger=CronTrigger(hour='0, 6, 12, 18', minute='0'),
     id='update_stock_data',
     replace_existing=True,

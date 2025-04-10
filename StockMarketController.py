@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime, timedelta
+from typing import Tuple
 
 
 class StockMarketController:
@@ -32,7 +33,7 @@ class StockMarketController:
         self.base_search_url = "https://api.tiingo.com/tiingo/utilities/search?query="
         self.headers = {'Content-Type': 'application/json'}
 
-    def search_ticker(self, query: str) -> list:
+    def search_ticker(self, query: str) -> list[Tuple[str, str]]:
         """
         Searches for stock tickers matching a given query.
 
@@ -40,7 +41,7 @@ class StockMarketController:
             query (str): The search term for the stock (e.g., "Tesla").
 
         Returns:
-            list: A list of stock tickers matching the query.
+            list: A list of tuples of stock names and tickers matching the query.
 
         Raises:
             Exception: If the API request fails or returns an empty response.
@@ -56,9 +57,9 @@ class StockMarketController:
         if not results:
             raise Exception("No tickers found for the given query.")
 
-        return [company["ticker"] for company in results]
+        return [(company["name"], company["ticker"]) for company in results]
 
-    def get_recent_prices(self, ticker: str) -> list[tuple[datetime, float]]:
+    def get_recent_prices(self, ticker: str) -> list[float]:
         """
         Retrieves the closing prices of a stock for the last 5 trading days.
 
@@ -74,7 +75,7 @@ class StockMarketController:
             Exception: If the API request fails or returns an empty response.
         """
         today = datetime.now().date()
-        start_date = today - timedelta(days=14)  # Ensures we fetch at least 5 trading days
+        start_date = today - timedelta(days=14)  # Ensures we fetch at least 6 trading days
         start_date_str = start_date.strftime("%Y-%m-%d")
 
         request_url = (
@@ -87,21 +88,18 @@ class StockMarketController:
         if response.status_code != 200:
             raise Exception(f"Tiingo API request failed: {response.text}")
 
-        price_data = response.json()[-5:]  # Extract last 5 trading days
+        price_data = response.json()[-6:]  # Extract last 6 trading days
         if not price_data:
             raise Exception("No price data found for the given ticker.")
 
-        return [
-            (datetime.strptime(entry["date"], "%Y-%m-%dT%H:%M:%S.000Z"), float(entry["close"]))
-            for entry in price_data
-        ]
+        return [ float(entry["close"]) for entry in price_data ]
 
 
 if __name__ == "__main__":
     # testing
     controller = StockMarketController()
     tickers = controller.search_ticker("microsoft")
-    ticker = tickers[0]
+    ticker = tickers[0][1]
     prices = controller.get_recent_prices(ticker)
     print(prices)
 
