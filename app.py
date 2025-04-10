@@ -7,32 +7,25 @@ from log_streamer import LogStreamer
 from StockMarketController import StockMarketController
 
 
-app = Flask(__name__)
-market = DataController(news_url='')  # initialize the DataController with the URL of the news module
+app = Flask(__name__)  # initialize the Flask app
 logger = LogStreamer()  # initialize the logger
-stock_market_controller = StockMarketController()  # initialize the stock market controller
+stock_market = StockMarketController()  # initialize the stock market controller
 scheduler = BackgroundScheduler()  # initialize the scheduler
+
+# initialize the DataController with the URL of the news module, the stock market controller, and the logger
+module_market = DataController(
+    news_url='',
+    stock_market=stock_market,
+    logger=logger,    
+)  
 # create a job to update stock data at defined time intervals
 scheduler.add_job(
-    market.start_market,
+    module_market.start_market,
     trigger=CronTrigger(hour='0, 6, 12, 18', minute='0'),
     id='update_stock_data',
     replace_existing=True,
 )
 scheduler.start()
-
-
-# Global list to store favorite companies
-favorites = []
-
-# Example company data (for the sake of simplicity)
-COMPANIES = [
-    {"ticker": "AAPL", "name": "Apple Inc."},
-    {"ticker": "GOOGL", "name": "Alphabet Inc. (Google)"},
-    {"ticker": "AMZN", "name": "Amazon.com, Inc."},
-    {"ticker": "MSFT", "name": "Microsoft Corporation"},
-    {"ticker": "TSLA", "name": "Tesla, Inc."},
-]
 
 
 # Route for streaming logs
@@ -44,7 +37,8 @@ def logs():
 # Route for the home page
 @app.route('/')
 def home():
-    return render_template('index.html', companies=COMPANIES, favorites=favorites)
+    favourites = module_market.get_favourite_stocks()
+    return render_template('index.html', favourites=favourites)
 
 
 @app.route('/start_app', methods=['POST'])
@@ -52,8 +46,7 @@ def start_app():
     """
     Start the application manually. Trigger the main pipeline.
     """
-    # update_stock_data()
-    logger.log("Application started manually")
+    module_market.start_market(mode='manually')  # start the market
     return redirect(url_for('home'))
 
 
@@ -67,8 +60,8 @@ def search_stock():
     if query:
         query = query.lower()
         try:
-            # Simulate search by filtering companies based on the query
-            search_results = [company for company in COMPANIES if query.lower() in company['name'].lower()]
+            # search for requested company using Stock Market
+            search_results = stock_market.search_ticker(query)
         except Exception as e:
             # if no query/bad query will be provided, return empty results -> will be displayed in the UI as "No results found."
             search_results = []   
@@ -76,30 +69,32 @@ def search_stock():
     return jsonify(search_results)
 
 
-# Route for adding a company to the favorites list
-@app.route('/add_favorite_stock', methods=['POST'])
-def add_favorite_stock():
+# Route for adding a company to the favourites list
+@app.route('/add_favourite_stock', methods=['POST'])
+def add_favourite_stock():
     ticker = request.form.get('ticker')
     name = request.form.get('name')
+
+    favourites = module_market.get_favourite_stocks()
     
-    # Check if the company is already in the favorites list
-    if all(fav['ticker'] != ticker for fav in favorites):
-        favorites.append({'ticker': ticker, 'name': name})
-        logger.log(f"Adding favorite stock: {ticker}")
+    # Check if the company is already in the favourites list
+    if all(fav[1] != ticker for fav in favourites):
+        new_stock = (name, ticker)
+        module_market.update_favourite_stocks(new_stock)  # add the company to the favourites list
+        logger.log(f"Adding favourite stock: {ticker}")
 
     return redirect(url_for('home'))
 
 
-# Route for removing a company from the favorites list
-@app.route('/delete_favorite_stock', methods=['POST'])
-def delete_favorite_stock():
+# Route for removing a company from the favourites list
+@app.route('/delete_favourite_stock', methods=['POST'])
+def delete_favourite_stock():
     ticker = request.form.get('ticker')
 
-    logger.log(f"Removing favorite stock: {ticker}")
+    logger.log(f"Removing favourite stock: {ticker}")
     
-    # Remove the company from the favorites list
-    global favorites
-    favorites = [fav for fav in favorites if fav['ticker'] != ticker]
+    # Remove the company from the favourites list
+    module_market.remove_favourite_stocks(ticker)
 
     return redirect(url_for('home'))
 
