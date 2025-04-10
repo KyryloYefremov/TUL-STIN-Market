@@ -4,11 +4,12 @@ from typing import Tuple
 
 from StockMarketController import StockMarketController
 from log_streamer import LogStreamer
+from config_manager import ConfigManager
 from filters import *
 
 
 class DataController:
-    def __init__(self, news_url: str, stock_market: StockMarketController, logger: LogStreamer):
+    def __init__(self, stock_market: StockMarketController, logger: LogStreamer, config_manager: ConfigManager):
         """
         Initializes the DataController with paths to data files.
         Stock data is stored in 'data' folder as a stock_data.json file in the following format:
@@ -24,12 +25,13 @@ class DataController:
         self.RATING_THRESHOLD = 0  # user-defined rating threshold for selling stocks
 
         # endpoints of module "News"
-        self.liststock_endpoint = f"{news_url}/liststock"
-        self.salestock_endpoint = f"{news_url}/salestock"
+        self.news_url = config_manager.NEWS_URL
+        self.liststock_endpoint = self.news_url + config_manager.LISTSTOCK_ENDPOINT
+        self.salestock_endpoint = self.news_url + config_manager.SALESTOCK_ENDPOINT
 
         # paths to data files
-        self.stock_data_path = "./data/stock_data.json"
-        self.favourite_stocks_path = "./data/favourite_stocks.txt"
+        # self.stock_data_path = config_manager.STOCK_DATA_PATH
+        self.favourite_stocks_path = config_manager.FAVOURITE_STOCKS_PATH
 
         # initialize filters
         self.filters = [
