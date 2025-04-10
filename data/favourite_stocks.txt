@@ -1,0 +1,3 @@
+Pineapple Inc,PNPL
+Microsoft Corporation,MSFT
+Apple Inc,AAPL
