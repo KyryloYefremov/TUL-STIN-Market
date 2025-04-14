@@ -21,7 +21,6 @@ class LogStreamer:
 
             :return: None
         """
-        print(optional_data)
         # get the current time and format it
         timestamp = time.strftime("[%H:%M:%S]")
         date = time.strftime("[%d.%m.%Y]")
