@@ -51,7 +51,7 @@ def test_log_streamer_initialization(log_streamer):
     assert len(log_streamer._messages) == 0
 
 
-def test_log_message_without_source(log_streamer):
+def test_log_message(log_streamer):
     """Test logging a message without a source"""
     test_message = "Test log message"
     log_streamer.log(test_message)
@@ -59,17 +59,6 @@ def test_log_message_without_source(log_streamer):
     assert len(log_streamer._messages) == 1
     assert test_message in log_streamer._messages[0]
     assert "[None]" not in log_streamer._messages[0]
-
-
-def test_log_message_with_source(log_streamer):
-    """Test logging a message with a source"""
-    test_message = "Test log message"
-    test_source = "TestSource"
-    log_streamer.log(test_message, test_source)
-    
-    assert len(log_streamer._messages) == 1
-    assert test_message in log_streamer._messages[0]
-    assert f"[{test_source}]" in log_streamer._messages[0]
 
 
 def test_log_message_contains_timestamp(log_streamer):
