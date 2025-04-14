@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+import time
 from typing import Tuple
 
 from StockMarketController import StockMarketController
@@ -37,14 +38,14 @@ class DataController:
 
         # initialize filters
         self.filters = [
-            # Filter3Days(),
-            # Filter5Days(),
+            Filter3Days(),
+            Filter5Days(),
         ]
         # initialize stock market controller
         self.stock_market = stock_market
         self.logger = logger
 
-        self.stocks = []
+        self.stocks = None
 
 
     def start_market(self, mode="by scheduler"):
@@ -57,6 +58,7 @@ class DataController:
         4. Based on the ratings, add a recommendation to the user favourite stocks either to sell, or keep them.
         5. Send the updated stock data to the module "News" in order to sell it or buy.
         """
+        self.stocks = None  # reset stocks data
         try:
             self.logger.log(f"Market started {mode}")
 
@@ -70,19 +72,19 @@ class DataController:
                 self.logger.log(f"No stocks to process")
                 return
 
-            self.pack_stock_data(filtered_stocks)  # pack stock data to json self.stocks
+            json_data = self.pack_stock_data(filtered_stocks)  # pack stock data to json
 
-            self.send_to_news_module(self.liststock_endpoint)
-            self.logger.log(f"Sent stocks to News: {self.liststock_endpoint}", optional_data=self.stocks)
-
-            self.get_stocks_rating()  # stocks ratings are saved to self.stocks
+            self.logger.log(f"Sending stocks to News: {self.liststock_endpoint}", optional_data=json_data)
+            self.send_to_news_module(self.liststock_endpoint, json_data)
+            
+            self.wait_for_news_response()  # wait for the response from News module
             self.logger.log(f"Received stocks rating from News", optional_data=self.stocks)
 
+            self.logger.log(f"Adding recommendations to stocks", optional_data=self.stocks)
             self.add_recommendations()
-            self.logger.log(f"Added recommendations to stocks", optional_data=self.stocks)
 
-            self.send_to_news_module(self.salestock_endpoint)
-            self.logger.log(f"Sent stocks to News: {self.salestock_endpoint}", optional_data=self.stocks)
+            self.logger.log(f"Sending stocks to News: {self.salestock_endpoint}", optional_data=self.stocks)
+            self.send_to_news_module(self.salestock_endpoint, self.stocks)
 
             self.logger.log(f"Market finished successfully")
         except Exception as e:
@@ -148,65 +150,90 @@ class DataController:
                 filtered_stocks.append(ticker)
         return filtered_stocks
     
-    def pack_stock_data(self, stocks: list[str]):
+    def pack_stock_data(self, stocks: list[str]) -> list[dict]:
         """
         Packs the stock data into a JSON object.
-        The JSON object contains the stock name, date, rating, and sale status.
+        The JSON object contains the stock name, date.
         """
         date = datetime.now().timestamp()
-        self.stocks = [{"name": stock, "date": date, "rating": 0, "sale": 0} for stock in stocks]
+        return [{"name": stock, "date": date} for stock in stocks]
     
-    def send_to_news_module(self, endpoint: str):
+    def send_to_news_module(self, endpoint: str, json_data: list[dict] = None):
         """
         Sends the filtered stocks to the module "News".
         The stocks data is sent as a JSON object.
 
         @param endpoint: `str` endpoint of the module "News"
+        @param json_data: `list` of stocks data to be sent to the module "News"
 
         @raises: `ConnectionError` if the request fails.
         """
+
         try:
-            response = requests.post(endpoint, json=self.stocks, verify="cert.pem")
-            response.raise_for_status()
-            # return response.json()
+            response = requests.post(endpoint, json=json_data)
         except requests.RequestException as e:
             raise ConnectionError(f"An error occurred while sending data to the News module: {e}")
-
-    def get_stocks_rating(self) -> dict:
-        """
-        Sends a request to the rating endpoint to get ratings for the provided stocks data.
-        Apply basic validation:
-            1. Checks if endpoint didn't send an empty data file.
-            2. Validates the response JSON: if some of the stocks have invalid attributes, skip it.
-
-        @raises: `ConnectionError` if the request fails or the response status code is not 200.
-        """
-        try:
-            response = requests.get(self.liststock_endpoint, json=self.stocks)
-            valid_stocks = []
-
-            if response.status_code == 200:
-                response_stocks_data = response.json()
-                # validation:
-                # 1. check if response json isn't empty
-                if not response_stocks_data:
-                    raise ValueError("The response JSON is empty.")
-                # 2. validate response json: if some of the stocks have invalid attributes, skip it
-                for stock in response_stocks_data:
-                    # TODO: add more complex validation
-                    # validace vstupních dat
-                    if all(attr in stock for attr in ["name", "date", "rating", "sale"]):
-                        if isinstance(stock["rating"], int) and self.RATING_MIN <= stock["rating"] <= self.RATING_MAX:
-                            valid_stocks.append(stock)
-
-                # save the valid stocks to self.stocks
-                self.stocks = valid_stocks
-            
-            else:
-                raise ConnectionError(f"Failed to get stock ratings. Status code: {response.status_code}, Response: {response.text}")
-        except requests.RequestException as e:
-            raise ConnectionError(f"An error occurred while requesting stock ratings: {e}")
         
+
+    def wait_for_news_response(self):
+        """
+        Waits for the response from the News module.
+        The function will wait for 5 seconds before checking the response.
+
+        @raises: `TimeoutError` if the response is not received within the timeout period.
+        """
+        timeout = 10  # seconds
+        interval = 0.5
+        elapsed = 0
+        # wait for ratings callback (e.g., max 10 seconds, check every 0.5 sec)
+        while elapsed < timeout:
+            self.logger.log(f"Waiting for News response... stocks: {self.stocks}")
+            # if the self.stocks was updated by the News module, break the loop
+            if self.stocks is not None:
+                return
+            # else wait for the next check
+            time.sleep(interval)
+            elapsed += interval
+        
+        raise TimeoutError("Timeout waiting for the News module response.")
+        
+
+    def validate_stocks(self, stock_data: dict) -> dict:
+        """
+        Validates the stocks data received from the News module.
+        It checks if the response JSON isn't empty and if the stocks have valid attributes.
+        If some of the stocks have invalid attributes, skip it.
+            @param stock_data: `dict` stocks data received from the News module
+
+            @return: `dict` of valid stocks
+
+            @raises: `ValueError` if the response JSON is empty.
+            @raises: `TypeError` if the stock data is not a list.
+            @raises: `KeyError` if the stock data doesn't contain the required attributes.
+            @raises: `ValueError` if the rating value is invalid.
+            @raises: `ValueError` if the response JSON is empty after the validation.
+        """
+        valid_stocks = []
+        # validation:
+        # 1. check if response json isn't empty
+        if not stock_data:
+            raise ValueError("The response JSON is empty.")
+        # 2. validate response json: if some of the stocks have invalid attributes, skip it
+        for stock in stock_data:
+            # check if the stock is a dictionary
+            if not isinstance(stock, dict):
+                raise TypeError("The stock data is not a dictionary.")
+            # check if the stock has the required attributes
+            if all(attr in stock for attr in ["name", "date", "rating"]):
+                # check if the stock has a valid rating
+                if isinstance(stock["rating"], int) and self.RATING_MIN <= stock["rating"] <= self.RATING_MAX:
+                    valid_stocks.append(stock)
+        
+        # 3. check if the response JSON is empty after the validation
+        if len(valid_stocks) == 0:
+            raise ValueError("The response JSON is empty after the validation.")
+
+        return valid_stocks
 
     def add_recommendations(self) -> dict:
         """
@@ -214,11 +241,15 @@ class DataController:
         If rating > self.RATING_THRESHOLD, add recommendation to sell.
         
         @raises: `ValueError` if the rating value is invalid.
+        @raises: `KeyError` if the stock data doesn't contain the required attributes.
         """
-        for stock in self.stocks:
-            if stock["rating"] > self.RATING_THRESHOLD:
-                stock["sale"] = 1
-            elif stock["rating"] <= self.RATING_THRESHOLD:
-                stock["sale"] = 0
-            else:
-                raise ValueError("Invalid rating value.")
+        try:
+            for stock in self.stocks:
+                if self.RATING_MAX >= stock["rating"] > self.RATING_THRESHOLD:
+                    stock["sale"] = 1
+                elif self.RATING_MIN <= stock["rating"] <= self.RATING_THRESHOLD:
+                    stock["sale"] = 0
+                else:
+                    raise ValueError("Invalid rating value.")
+        except KeyError as e:
+            raise KeyError(f"Missing required attribute `rating` in stock data: {e}")
