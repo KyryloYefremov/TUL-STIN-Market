@@ -9,5 +9,5 @@ stin-venv/
 .pytest_cache/
 htmlcov/
 
-*.json
+# *.json
 *.txt
