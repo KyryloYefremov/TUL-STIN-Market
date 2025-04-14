@@ -47,7 +47,7 @@ class DataController:
         self.stocks = []
 
 
-    def start_market(self, mode="scheduled"):
+    def start_market(self, mode="by scheduler"):
         """
         Function to start our market - update stock data. This function will be called by the scheduler or manually from UI.
         The function will trigger the pipeline:
@@ -61,10 +61,10 @@ class DataController:
             self.logger.log(f"Market started {mode}")
 
             favourite_stocks = self.get_favourite_stocks()
-            self.logger.log(f"Receiving favourite stocks: {len(favourite_stocks)}")
+            self.logger.log(f"Received {len(favourite_stocks)} favourite stocks", optional_data=favourite_stocks)
 
             filtered_stocks = self.filter_stocks(favourite_stocks)
-            self.logger.log(f"Filtered stocks: {len(filtered_stocks)}")
+            self.logger.log(f"Filtered stocks: {len(filtered_stocks)}", optional_data=filtered_stocks)
 
             if len(filtered_stocks) == 0:
                 self.logger.log(f"No stocks to process")
@@ -73,20 +73,20 @@ class DataController:
             self.pack_stock_data(filtered_stocks)  # pack stock data to json self.stocks
 
             self.send_to_news_module(self.liststock_endpoint)
-            self.logger.log(f"Sending stocks to News: {self.liststock_endpoint}")
+            self.logger.log(f"Sent stocks to News: {self.liststock_endpoint}", optional_data=self.stocks)
 
             self.get_stocks_rating()  # stocks ratings are saved to self.stocks
-            self.logger.log(f"Getting stocks rating from News")
+            self.logger.log(f"Received stocks rating from News", optional_data=self.stocks)
 
             self.add_recommendations()
-            self.logger.log(f"Adding recommendations to stocks")
+            self.logger.log(f"Added recommendations to stocks", optional_data=self.stocks)
 
             self.send_to_news_module(self.salestock_endpoint)
-            self.logger.log(f"Sending stocks to News: {self.salestock_endpoint}")
+            self.logger.log(f"Sent stocks to News: {self.salestock_endpoint}", optional_data=self.stocks)
 
             self.logger.log(f"Market finished successfully")
         except Exception as e:
-            self.logger.log(f"Market failed.")
+            self.logger.log(f"Market failed")
             self.logger.log(f"Error: {e}")
 
     def update_favourite_stocks(self, new_stock: Tuple[str, str]):

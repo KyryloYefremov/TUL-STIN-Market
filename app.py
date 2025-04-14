@@ -89,7 +89,7 @@ def add_favourite_stock():
     if all(fav[1] != ticker for fav in favourites):
         new_stock = (name, ticker)
         module_market.update_favourite_stocks(new_stock)  # add the company to the favourites list
-        logger.log(f"Adding favourite stock: {ticker}")
+        logger.log(f"Added favourite stock: {ticker}")
 
     return redirect(url_for('home'))
 
@@ -99,7 +99,7 @@ def add_favourite_stock():
 def delete_favourite_stock():
     ticker = request.form.get('ticker')
 
-    logger.log(f"Removing favourite stock: {ticker}")
+    logger.log(f"Removed favourite stock: {ticker}")
     
     # Remove the company from the favourites list
     module_market.remove_favourite_stocks(ticker)
@@ -116,39 +116,6 @@ def receive_rating():
     
     return jsonify()
 
-
-# # Endpoint to send the list of stocks 
-# @app.route('/liststock')
-# def send_liststock():
-#     """
-#     Send a list of filtered stocks to the endpoint as json.
-#     """
-#     logger.log("Endpoint /liststock was triggered")
-
-#     json_data = [
-#         {"name": "Microsoft", "date": None, "rating": None, "sale": None},
-#         {"name": "Google", "date": None, "rating": None, "sale": None},
-#         {"name": "OpenAI", "date": None, "rating": None, "sale": None},
-#     ]
-#     return jsonify(json_data)
-
-
-# # Endpoint to send the list of stocks with a recommendation to sell
-# @app.route('/salestock')
-# def add_recommendations():
-#     """ 
-#     Add a recommendation "to sell" to those items
-#     that have a higher rating than the user-defined value. 
-#     Send the updated json to the endpoint
-#     """
-#     logger.log("Endpoint /salestock was triggered")
-
-#     json_data = [
-#         {"name": "Microsoft", "date": None, "rating": None, "sale": 1},
-#         {"name": "Google", "date": None, "rating": None, "sale": 0},
-#         {"name": "OpenAI", "date": None, "rating": None, "sale": 0},
-#     ]
-#     return jsonify(json_data)
 
 
 if __name__ == '__main__':
