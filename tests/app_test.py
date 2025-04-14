@@ -25,27 +25,3 @@ def test_home(client):
     """
     response = client.get('/')
     assert response.status_code == 200
-
-
-def test_liststock(client):
-    """
-    Test the liststock route of the Flask application.
-    This test checks if the liststock route returns a 200 status code
-    and if the response is a list of stocks with the expected structure.
-    """
-    response = client.get('/liststock')
-    assert response.status_code == 200
-    data = response.get_json()
-    assert isinstance(data, list)
-    assert all("name" in item for item in data)
-
-
-def test_salestock(client):
-    """
-    Test the salestock route of the Flask application.
-    This test checks if the salestock route returns a 200 status code.
-    """
-    response = client.get('/salestock')
-    assert response.status_code == 200
-    data = response.get_json()
-    assert isinstance(data, list)

@@ -12,7 +12,7 @@ class StockMarketController:
     - Retrieve the closing prices of a stock for the last 5 trading days.
     """
 
-    def __init__(self):
+    def __init__(self, api_key: str = ""):
         """
         Initializes the StockMarketController with an API key from 'key_tiingo.txt'
         and sets up the necessary Tiingo API endpoints.
@@ -20,15 +20,10 @@ class StockMarketController:
         Raises:
             Exception: If the API key is missing or invalid.
         """
-        try:
-            with open("key_tiingo.txt", "r") as file:
-                key = file.read().strip()
-                if not key:
-                    raise ValueError("API key is missing. Please check 'key_tiingo.txt'.")
-                self.api_key = key
-        except FileNotFoundError:
-            raise FileNotFoundError("The 'key_tiingo.txt' file was not found.")
-
+        if not api_key:
+            raise ValueError("API key is required. Please provide a valid Tiingo API key.")
+        
+        self.api_key = api_key
         self.base_price_url = "https://api.tiingo.com/tiingo/daily/"
         self.base_search_url = "https://api.tiingo.com/tiingo/utilities/search?query="
         self.headers = {'Content-Type': 'application/json'}

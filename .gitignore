@@ -8,3 +8,6 @@ stin-venv/
 .coverage
 .pytest_cache/
 htmlcov/
+
+# *.json
+*.txt

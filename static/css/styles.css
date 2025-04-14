@@ -11,7 +11,7 @@ header h1 {
     color: #007bff;
 }
 
-#favorite-list li {
+#favourite-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;

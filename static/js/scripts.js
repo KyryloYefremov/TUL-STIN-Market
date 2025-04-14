@@ -30,10 +30,10 @@ document.getElementById('search-form').addEventListener('submit', function (e) {
                 data.forEach(company => {
                     const listItem = document.createElement('li');
                     listItem.classList.add('list-group-item');
-                    listItem.innerHTML = `${company.ticker} - ${company.name} 
-                    <form action="${addFavoriteStockUrl}" method="POST" class="d-inline">
-                        <input type="hidden" name="ticker" value="${company.ticker}">
-                        <input type="hidden" name="name" value="${company.name}">
+                    listItem.innerHTML = `${company[1]} - ${company[0]} 
+                    <form action="${addFavouriteStockUrl}" method="POST" class="d-inline">
+                        <input type="hidden" name="ticker" value="${company[1]}">
+                        <input type="hidden" name="name" value="${company[0]}">
                         <button class="btn btn-success btn-sm float-end" type="submit">Save</button>
                     </form>`;
                     modalList.appendChild(listItem);

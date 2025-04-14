@@ -1,5 +1,6 @@
 import time
 from flask import Response, stream_with_context
+from typing import Any
 
 
 class LogStreamer:
@@ -12,20 +13,20 @@ class LogStreamer:
     def __init__(self):
         self._messages = []
 
-    def log(self, message: str, source: str = ""):
+    def log(self, message: str, optional_data: Any = None):
         """
         Log a message with a timestamp and optional source.
             :param message: The message to log.
-            :param source: Optional source of the message (e.g., "StockMarketController").
+            :param optional_data: Optional data to include with the message.
 
             :return: None
         """
         # get the current time and format it
-        timestamp = time.strftime("[%H:%M:%S] - ")
+        timestamp = time.strftime("[%H:%M:%S]")
         date = time.strftime("[%d.%m.%Y]")
         # format the message with the timestamp and source
-        prefix = f"[{source}] " if source else ""
-        full_message = f"{timestamp}{prefix}{message} {date}"
+        optional_msg = f"DATA: {optional_data}" if optional_data is not None else ""
+        full_message = f"{timestamp}{date} - {message}; {optional_msg}"
         self._messages.append(full_message)  # add the message to the list
 
     def stream(self):
@@ -45,5 +46,5 @@ class LogStreamer:
                     # Send the new messages to the client
                     yield f"data: {self._messages[last_index]}\n\n"
                     last_index += 1
-                time.sleep(1)
+                time.sleep(0.1)
         return Response(stream_with_context(event_stream()), mimetype="text/event-stream")
