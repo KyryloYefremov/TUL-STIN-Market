@@ -110,12 +110,45 @@ def delete_favourite_stock():
 @app.route('/rating', methods=['POST'])
 def receive_rating():
     """
-    Receive the request to send a list of filtered stocks to get the rating.
+    The endpoint to receive ratings from the News module. 
+    This endpoint saves received JSON to DataController attribute.
     """
-    logger.log("Endpoint /rating was triggered")
-    
-    return jsonify()
+    logger.log("Endpoint `/rating` was triggered")
 
+    if request.method == 'POST':
+        # get the JSON data from the request
+        data = request.get_json()
+        logger.log(f"Received rating: {data}")
+
+        valid_data = module_market.validate_stocks(data)
+        logger.log(f"After validation stocks: {valid_data}")
+
+        # save the received valid data to DataController
+        module_market.stocks = valid_data
+    
+        return jsonify({'status': 'success'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid request method'}), 400
+    
+    
+### TEST ROUTES FOR SIMULATING THE NEWS MODULE ###
+@app.route('/liststock', methods=['GET', 'POST'])
+def list_stocks():
+    """
+    Route for listing stocks.
+    """
+    # Assuming the request was successful, return a JSON response
+    return jsonify({"message": "Stocks listed successfully."}), 200
+
+
+@app.route('/salestock', methods=['GET', 'POST'])
+def sale_stock():
+    """
+    Route for selling stocks.
+    """
+    # Assuming the request was successful, return a JSON response
+    return jsonify({"message": "Stock sold successfully."}), 200
+##################################################
 
 
 if __name__ == '__main__':
