@@ -55,8 +55,6 @@ class DataController:
         1. Get favourite stocks from the user file.
         2. Filter the stocks by the defined filters based on price from API.
         3. Send filtered stocks to module "News" to get ratings for requested companies stocks based on their latest news.
-        4. Based on the ratings, add a recommendation to the user favourite stocks either to sell, or keep them.
-        5. Send the updated stock data to the module "News" in order to sell it or buy.
         """
         self.stocks = None  # reset stocks data
         try:
@@ -78,8 +76,26 @@ class DataController:
             self.send_to_news_module(self.liststock_endpoint, json_data)
             
             self.wait_for_news_response()  # wait for the response from News module
-            self.logger.log(f"Received stocks rating from News", optional_data=self.stocks)
+        except Exception as e:
+            self.logger.log(f"Market failed")
+            self.logger.log(f"Error: {e}")
 
+    def second_step_market(self, data: dict):
+        """
+        Second part of the market pipeline where 3 final steps are completed:
+        4. Validate received data from News module
+        5. Based on the ratings, add a recommendation to the user favourite stocks either to sell, or keep them.
+        6. Send the updated stock data to the module "News" in order to sell it or buy.
+
+        @param data: dict, stocks data received from the News module
+
+        """
+        try:
+            valid_data = self.validate_stocks(data)
+            self.logger.log(f"After validation stocks: {valid_data}")
+
+            # save the received valid data to DataController
+            self.stocks = valid_data
             self.logger.log(f"Adding recommendations to stocks", optional_data=self.stocks)
             self.add_recommendations()
 
@@ -91,6 +107,8 @@ class DataController:
             self.logger.log(f"Market failed")
             self.logger.log(f"Error: {e}")
 
+
+
     def update_favourite_stocks(self, new_stock: Tuple[str, str]):
         """
         Triggers when the user adds a new stock to the favourite stocks.
@@ -98,8 +116,11 @@ class DataController:
 
         @param new_stock: tuple (name, ticker)
         """
-        with open(self.favourite_stocks_path, "a") as file:
-            file.write(f"{new_stock[0]},{new_stock[1]}\n")
+        try:
+            with open(self.favourite_stocks_path, "a") as file:
+                file.write(f"{new_stock[0]},{new_stock[1]}\n")
+        except Exception as e:
+            self.logger.log(f"Error updating favourite stocks: {e}")
 
     def remove_favourite_stocks(self, stock: str):
         """
@@ -182,20 +203,22 @@ class DataController:
 
         @raises: `TimeoutError` if the response is not received within the timeout period.
         """
-        timeout = 10  # seconds
-        interval = 0.5
+        timeout = 60  # seconds
+        interval = 5
         elapsed = 0
         # wait for ratings callback (e.g., max 10 seconds, check every 0.5 sec)
         while elapsed < timeout:
             self.logger.log(f"Waiting for News response... stocks: {self.stocks}")
             # if the self.stocks was updated by the News module, break the loop
             if self.stocks is not None:
+                self.logger.log(f"Received stocks rating from News", optional_data=self.stocks)
                 return
             # else wait for the next check
             time.sleep(interval)
             elapsed += interval
-        
-        raise TimeoutError("Timeout waiting for the News module response.")
+
+        self.logger.log("Didn't receive the response from the News module in one minute.")
+        # raise TimeoutError("Timeout waiting for the News module response.")
         
 
     def validate_stocks(self, stock_data: dict) -> dict:

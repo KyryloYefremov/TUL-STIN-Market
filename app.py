@@ -120,11 +120,12 @@ def receive_rating():
         data = request.get_json()
         logger.log(f"Received rating: {data}")
 
-        valid_data = module_market.validate_stocks(data)
-        logger.log(f"After validation stocks: {valid_data}")
-
-        # save the received valid data to DataController
-        module_market.stocks = valid_data
+        # valid_data = module_market.validate_stocks(data)
+        # logger.log(f"After validation stocks: {valid_data}")
+        #
+        # # save the received valid data to DataController
+        # module_market.stocks = valid_data
+        module_market.second_step_market(data)
     
         return jsonify({'status': 'success'}), 200
     else:
