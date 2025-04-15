@@ -116,9 +116,14 @@ class DataController:
 
         @param new_stock: tuple (name, ticker)
         """
+        # check if the file exists, if not create it
         try:
             with open(self.favourite_stocks_path, "a") as file:
                 file.write(f"{new_stock[0]},{new_stock[1]}\n")
+        except FileNotFoundError:
+            # create the file if it doesn't exist
+            with open(self.favourite_stocks_path, "w") as file:
+                file.write(f"{new_stock[0]},{new_stock[1]}\n")     
         except Exception as e:
             self.logger.log(f"Error updating favourite stocks: {e}")
 
