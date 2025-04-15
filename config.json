@@ -1,0 +1,11 @@
+{
+    "tiingo_api_key": "61d96de49a8c40caded595a8d9d640cbe8d05bad",
+    "rating_threshold": 0,
+    "rating_min": -10,
+    "rating_max": 10,
+    "news_module_url": "http://127.0.0.1:5000",
+    "liststock_endpoint": "/liststock",
+    "salestock_endpoint": "/salestock",
+    "favourite_stocks_path": "./data/favourite_stocks.txt",
+    "schedule": "0, 6, 12, 18"
+}
