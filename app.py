@@ -153,4 +153,4 @@ def sale_stock():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)   # run the app
+    app.run()   # run the app
