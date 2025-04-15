@@ -10,4 +10,4 @@ stin-venv/
 htmlcov/
 
 # *.json
-*.txt
+# *.txt
