@@ -48,9 +48,9 @@ document.getElementById('search-form').addEventListener('submit', function (e) {
 
 // Logging helper
 function logEvent(message) {
-    const now = new Date();
     const logPanel = document.getElementById('log-panel');
     logPanel.textContent += `\n\n${message}`;
+    logPanel.scrollIntoView(false); // Scroll to bottom when panel is shown
 }
 
 // Connect to SSE for server logs
