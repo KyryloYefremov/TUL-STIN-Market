@@ -73,7 +73,7 @@ class DataController:
 
             json_data = self.pack_stock_data(filtered_stocks)  # pack stock data to json
 
-            self.logger.log(f"Sending stocks to News: {self.liststock_endpoint}", optional_data=json_data)
+            # self.logger.log(f"Sending stocks to News: {self.liststock_endpoint}", optional_data=json_data)
             self.send_to_news_module(self.liststock_endpoint, json_data)
             
             self.wait_for_news_response()  # wait for the response from News module
@@ -197,7 +197,7 @@ class DataController:
 
         @raises: `ConnectionError` if the request fails.
         """
-
+        self.logger.log(f"Sending data to the News module: {endpoint}", optional_data=json_data)
         try:
             headers = {'Content-Type': 'application/json'}
             response = requests.post(endpoint, json=json.dumps(json_data), headers=headers)
