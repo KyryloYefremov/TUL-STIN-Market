@@ -100,7 +100,7 @@ class DataController:
             self.logger.log(f"Adding recommendations to stocks", optional_data=self.stocks)
             self.add_recommendations()
 
-            self.logger.log(f"Sending stocks to News: {self.salestock_endpoint}", optional_data=self.stocks)
+            # self.logger.log(f"Sending stocks to News: {self.salestock_endpoint}", optional_data=self.stocks)
             self.send_to_news_module(self.salestock_endpoint, self.stocks)
 
             self.logger.log(f"Market finished successfully")
