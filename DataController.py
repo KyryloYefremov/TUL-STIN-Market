@@ -228,14 +228,14 @@ class DataController:
         # raise TimeoutError("Timeout waiting for the News module response.")
         
 
-    def validate_stocks(self, stock_data: dict) -> dict:
+    def validate_stocks(self, stock_data: list[dict]) -> list[dict]:
         """
         Validates the stocks data received from the News module.
         It checks if the response JSON isn't empty and if the stocks have valid attributes.
         If some of the stocks have invalid attributes, skip it.
             @param stock_data: `dict` stocks data received from the News module
 
-            @return: `dict` of valid stocks
+            @return: `list` of valid stocks
 
             @raises: `ValueError` if the response JSON is empty.
             @raises: `TypeError` if the stock data is not a list.
@@ -250,6 +250,7 @@ class DataController:
             raise ValueError("The response JSON is empty.")
         # 2. validate response json: if some of the stocks have invalid attributes, skip it
         for stock in stock_data:
+            self.logger.log(f"Validating stock: {stock} and type: {type(stock)}")
             # check if the stock is a dictionary
             if not isinstance(stock, dict):
                 raise TypeError("The stock data is not a dictionary.")
