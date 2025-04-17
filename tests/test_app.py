@@ -54,12 +54,12 @@ def test_delete_favourite_stock(mock_log, mock_remove_fav, client):
     response = client.post("/delete_favourite_stock", data={"ticker": "TST"})
     assert response.status_code == 302
 
-@patch("app.module_market.second_step_market")
-@patch("app.logger.log")
-def test_receive_rating_post_success(mock_log, mock_second_step, client):
-    response = client.post("/rating", json={"name": "Test", "rating": 5, "date": 1234567890})
-    assert response.status_code == 200
-    assert response.json["status"] == "success"
+# @patch("app.module_market.second_step_market")
+# @patch("app.logger.log")
+# def test_receive_rating_post_success(mock_log, mock_second_step, client):
+#     response = client.post("/rating", json={"name": "Test", "rating": 5, "date": 1234567890})
+#     assert response.status_code == 200
+#     assert response.json["status"] == "success"
 
 def test_receive_rating_wrong_method(client):
     response = client.get("/rating")

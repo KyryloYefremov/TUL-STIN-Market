@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+import json
 
 from DataController import DataController
 from log_streamer import LogStreamer
@@ -118,6 +119,7 @@ def receive_rating():
     if request.method == 'POST':
         # get the JSON data from the request
         data = request.get_json()
+        data = json.loads(data)
         logger.log(f"Received rating: {data}")
 
         # valid_data = module_market.validate_stocks(data)
