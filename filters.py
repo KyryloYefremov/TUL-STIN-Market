@@ -14,8 +14,9 @@ class Filter3Days(Filter):
     """
     @staticmethod
     def apply(prices: list[float]) -> bool:
-        for i in range(1, len(prices)):
-            if prices[i - 1] > prices[i]:
+        relevant_prices = prices.copy()[-3:]
+        for i in range(1, len(relevant_prices)):
+            if relevant_prices[i - 1] > relevant_prices[i]:
                 return False
         return True
     
@@ -26,9 +27,10 @@ class Filter5Days(Filter):
     """
     @staticmethod
     def apply(prices: list[float]) -> bool:
+        relevant_prices = prices.copy()[-5:]
         declines = 0
-        for i in range(1, len(prices)):
-            if prices[i - 1] > prices[i]:
+        for i in range(1, len(relevant_prices)):
+            if relevant_prices[i - 1] > relevant_prices[i]:
                 declines += 1
         return declines <= 2
 
