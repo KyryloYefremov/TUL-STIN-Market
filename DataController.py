@@ -170,6 +170,8 @@ class DataController:
             ticker = stock[1]  # get the ticker
             prices = self.stock_market.get_recent_prices(ticker)  # get the last 5 prices
 
+            self.logger.log(f"Filtering stock: {ticker}", optional_data=prices)
+            self.logger.log(f"Applied filters: {[ filter.__class__.__name__ for filter in self.filters]}")
             # apply filters
             # if all filter was satisfied, add the stock to the filtered list
             if all(filter.apply(prices) for filter in self.filters):
