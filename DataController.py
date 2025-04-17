@@ -184,7 +184,7 @@ class DataController:
         The JSON object contains the stock name, date.
         """
         date = int(datetime.now().timestamp())
-        return [{"name": stock, "date": date} for stock in stocks]
+        return [{"name": stock, "date": date, "rating": 0, "sale": 0} for stock in stocks]
     
     def send_to_news_module(self, endpoint: str, json_data: list[dict] = None):
         """
