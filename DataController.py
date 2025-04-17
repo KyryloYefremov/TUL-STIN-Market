@@ -200,10 +200,10 @@ class DataController:
 
         try:
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(endpoint, json=json.dumps(json_data))
+            response = requests.post(endpoint, json=json.dumps(json_data), headers=headers)
             # check if the response is successful
             if response.status_code != 200:
-                raise ConnectionError(f"Failed to send data to the News module. Status code: {response.status_code}")
+                raise ConnectionError(f"Failed to send data to the News module. Status code: {response.status_code}. Response: {response.text}")
             self.logger.log(f"Data sent to the News module successfully: {response.status_code}")
         except requests.RequestException as e:
             raise ConnectionError(f"An error occurred while sending data to the News module: {e}")
