@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import time
 from typing import Tuple
+import json
 
 from StockMarketController import StockMarketController
 from log_streamer import LogStreamer
@@ -199,7 +200,7 @@ class DataController:
 
         try:
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(endpoint, json=json_data)
+            response = requests.post(endpoint, json=json.dumps(json_data))
             # check if the response is successful
             if response.status_code != 200:
                 raise ConnectionError(f"Failed to send data to the News module. Status code: {response.status_code}")
