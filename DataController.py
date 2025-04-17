@@ -170,6 +170,8 @@ class DataController:
             ticker = stock[1]  # get the ticker
             prices = self.stock_market.get_recent_prices(ticker)  # get the last 5 prices
 
+            self.logger.log(f"Filtering stock: {ticker}", optional_data=prices)
+            self.logger.log(f"Applied filters: {[ filter.__class__.__name__ for filter in self.filters]}")
             # apply filters
             # if all filter was satisfied, add the stock to the filtered list
             if all(filter.apply(prices) for filter in self.filters):
@@ -181,8 +183,8 @@ class DataController:
         Packs the stock data into a JSON object.
         The JSON object contains the stock name, date.
         """
-        date = datetime.now().timestamp()
-        return [{"name": stock, "date": date} for stock in stocks]
+        date = int(datetime.now().timestamp())
+        return [{"name": stock, "date": date, "rating": 0, "sale": 0} for stock in stocks]
     
     def send_to_news_module(self, endpoint: str, json_data: list[dict] = None):
         """

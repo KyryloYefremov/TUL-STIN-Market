@@ -1,45 +1,17 @@
-import pytest
-import tempfile
-import json
-from config_manager import ConfigManager
+from filters import Filter3Days, Filter5Days
 
-def test_load_valid_config():
-    config_data = {
-        "tiingo_api_key": "test_key",
-        "rating_threshold": 3,
-        "rating_min": 1,
-        "rating_max": 5,
-        "liststock_endpoint": "/list",
-        "salestock_endpoint": "/sale",
-        "favourite_stocks_path": "favourites.txt",
-        "schedule": "12",
-        "news_module_url": "http://news.local"
-    }
+def test_filter_3_days_true():
+    prices = [100, 101, 102]
+    assert Filter3Days.apply(prices)
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as tmp:
-        json.dump(config_data, tmp)
-        tmp.seek(0)
-        config = ConfigManager(tmp.name)
+def test_filter_3_days_false():
+    prices = [100, 99, 101]
+    assert not Filter3Days.apply(prices)
 
-    assert config.TIINGO_API_KEY == "test_key"
-    assert config.RATING_THRESHOLD == 3
-    assert config.RATING_MIN == 1
-    assert config.RATING_MAX == 5
-    assert config.LISTSTOCK_ENDPOINT == "/list"
-    assert config.SALESTOCK_ENDPOINT == "/sale"
-    assert config.FAVOURITE_STOCKS_PATH == "favourites.txt"
-    assert config.SCHEDULE == "12"
-    assert config.NEWS_URL == "http://news.local"
+def test_filter_5_days_true():
+    prices = [100, 99, 98, 99, 100]
+    assert Filter5Days.apply(prices)
 
-def test_missing_file():
-    with pytest.raises(Exception, match="Configuration file"):
-        ConfigManager("nonexistent.json")
-
-def test_invalid_json():
-    with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as tmp:
-        tmp.write("{invalid: true")
-        tmp.seek(0)
-        tmp.flush()
-
-        with pytest.raises(Exception, match="Error decoding JSON"):
-            ConfigManager(tmp.name)
+def test_filter_5_days_false():
+    prices = [100, 99, 98, 97, 96]
+    assert not Filter5Days.apply(prices)
